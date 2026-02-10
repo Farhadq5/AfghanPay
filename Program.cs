@@ -167,7 +167,7 @@ builder.Services.AddCors(options =>
     {
         if (builder.Environment.IsDevelopment())
         {
-            policy//.AllowAnyOrigin()     // Allow any frontend (Flutter, Blazor)
+            policy.WithOrigins("https://localhost:7177")     // Allow any frontend (Flutter, Blazor)
               .AllowAnyMethod()      // Allow GET, POST, PUT, DELETE, etc.
               .AllowAnyHeader()    // Allow any headers
               .SetIsOriginAllowed(origin => true) // Allow all origins (for development)
@@ -277,7 +277,10 @@ else
 
 app.UseHttpsRedirection();
 
-app.UseCors("ApiCors");
+if (app.Environment.IsDevelopment() || mvcOrigins.Length > 0)
+{
+    app.UseCors("ApiCors");
+}
 
 app.UseAuthentication(); // check jwt token
 
