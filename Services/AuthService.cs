@@ -25,7 +25,7 @@ namespace AfghanPay.API.Services
      
         public string GenerateJwtToken(Guid userId, string role, string? agentCode = null)
         {
-            var jwtSettings = _configuration.GetSection("JwtSettings");
+            var jwtSettings = _configuration.GetSection("Jwt");
             var secretKey = jwtSettings["SecretKey"];
             var issuer = jwtSettings["issuer"];
             var asudience = jwtSettings["audience"];
