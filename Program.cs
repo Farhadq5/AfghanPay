@@ -175,13 +175,11 @@ builder.Services.AddCors(options =>
         }
         else
         {
-            if (mvcOrigins.Length > 0)
-            {
-                policy.WithOrigins(mvcOrigins)
+                policy.WithOrigins("https://localhost:7177")
                 .AllowAnyMethod()
                 .AllowAnyHeader()
                 .AllowCredentials();
-            }
+            
         }
 
     });
