@@ -1,0 +1,165 @@
+﻿<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Money System - Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            text-align: center;
+        }
+
+        h1 {
+            color: white;
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        p {
+            color: white;
+            font-size: 18px;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .app-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            transition: transform 0.3s;
+            text-decoration: none;
+            color: #333;
+        }
+
+            .app-card:hover {
+                transform: translateY(-10px);
+            }
+
+        .app-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .app-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .app-description {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .app-button {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+            .app-button:hover {
+                transform: scale(1.05);
+            }
+
+        .app-card.user .app-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .app-card.agent .app-button {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .app-card.admin .app-button {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .credentials {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 40px;
+            color: white;
+        }
+
+            .credentials h3 {
+                margin-bottom: 15px;
+            }
+
+        .cred-item {
+            margin: 10px 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💰 Mobile Money System</h1>
+        <p>Demo System - P2P Transfers, Cash-In/Out, Admin Dashboard</p>
+
+        <div class="apps-grid">
+            <!-- User App -->
+            <div class="app-card user">
+                <div class="app-icon">📱</div>
+                <div class="app-title">User App</div>
+                <div class="app-description">
+                    Send money, view balance, check transaction history
+                </div>
+                <a href="user-app.html" class="app-button">Open User App</a>
+            </div>
+
+            <!-- Agent App -->
+            <div class="app-card agent">
+                <div class="app-icon">🏪</div>
+                <div class="app-title">Agent Portal</div>
+                <div class="app-description">
+                    Cash-in, cash-out, view commissions and earnings
+                </div>
+                <a href="agent-app.html" class="app-button">Open Agent Portal</a>
+            </div>
+
+            <!-- Admin App -->
+            <div class="app-card admin">
+                <div class="app-icon">🎛️</div>
+                <div class="app-title">Admin Dashboard</div>
+                <div class="app-description">
+                    Monitor transactions, view statistics and reports
+                </div>
+                <a href="admin-app.html" class="app-button">Open Admin Dashboard</a>
+            </div>
+        </div>
+    </div>
+</body>
+
+        <!-- Test Credentials -->
+        <div class="credentials">
+            <h3>📝 Test Credentials></h3>
+        </div>

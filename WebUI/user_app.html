@@ -1,0 +1,548 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Money - User App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        h1, h2 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            font-size: 24px;
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 18px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .balance-display {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .balance-amount {
+            font-size: 42px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .balance-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .user-info {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .user-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .user-phone {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .transaction-item {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+
+        .transaction-type {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        .transaction-amount {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .transaction-amount.sent {
+            color: #f5576c;
+        }
+
+        .transaction-amount.received {
+            color: #28a745;
+        }
+
+        .transaction-date {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 10px;
+            background: #e0e0e0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 Mobile Money</h1>
+
+        <!-- Login Section -->
+        <div id="loginSection" class="card">
+            <h2>Login</h2>
+            <div id="loginMessage" class="message"></div>
+            <div class="input-group">
+                <label>Phone Number</label>
+                <input type="tel" id="loginPhone" placeholder="+93700111222" value="+93700111222">
+            </div>
+            <div class="input-group">
+                <label>PIN</label>
+                <input type="password" id="loginPin" placeholder="1234" maxlength="4" value="1234">
+            </div>
+            <button onclick="login()">Login</button>
+            <div style="margin-top: 15px; text-align: center;">
+                <a href="#" onclick="showRegister(); return false;" style="color: #667eea; text-decoration: none;">Don't have an account? Register</a>
+            </div>
+        </div>
+
+        <!-- Register Section -->
+        <div id="registerSection" class="card hidden">
+            <h2>Register</h2>
+            <div id="registerMessage" class="message"></div>
+            <div class="input-group">
+                <label>Phone Number</label>
+                <input type="tel" id="registerPhone" placeholder="+93700999888">
+            </div>
+            <div class="input-group">
+                <label>Full Name</label>
+                <input type="text" id="registerName" placeholder="Ali Rezai">
+            </div>
+            <div class="input-group">
+                <label>PIN (4 digits)</label>
+                <input type="password" id="registerPin" placeholder="1234" maxlength="4">
+            </div>
+            <div class="input-group">
+                <label>Confirm PIN</label>
+                <input type="password" id="registerConfirmPin" placeholder="1234" maxlength="4">
+            </div>
+            <button onclick="register()">Register</button>
+            <div style="margin-top: 15px; text-align: center;">
+                <a href="#" onclick="showLogin(); return false;" style="color: #667eea; text-decoration: none;">Already have an account? Login</a>
+            </div>
+        </div>
+
+        <!-- Main App Section -->
+        <div id="appSection" class="hidden">
+            <!-- User Info -->
+            <div class="user-info">
+                <div class="user-name" id="userName">Loading...</div>
+                <div class="user-phone" id="userPhone">+93700111222</div>
+            </div>
+
+            <!-- Balance Card -->
+            <div class="balance-display">
+                <div class="balance-label">Your Balance</div>
+                <div class="balance-amount" id="balanceAmount">0 AFN</div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('transfer')">Transfer</button>
+                <button class="tab" onclick="showTab('history')">History</button>
+            </div>
+
+            <!-- Transfer Section -->
+            <div id="transferSection" class="card">
+                <h2>Send Money</h2>
+                <div id="transferMessage" class="message"></div>
+                <div class="input-group">
+                    <label>Receiver Phone Number</label>
+                    <input type="tel" id="receiverPhone" placeholder="+93700222333">
+                </div>
+                <div class="input-group">
+                    <label>Amount (AFN)</label>
+                    <input type="number" id="transferAmount" placeholder="1000">
+                </div>
+                <div class="input-group">
+                    <label>Your PIN</label>
+                    <input type="password" id="transferPin" placeholder="1234" maxlength="4">
+                </div>
+                <button onclick="sendMoney()">Send Money</button>
+            </div>
+
+            <!-- History Section -->
+            <div id="historySection" class="card hidden">
+                <h2>Transaction History</h2>
+                <div id="transactionsList">
+                    <div class="loading">Loading transactions...</div>
+                </div>
+            </div>
+
+            <!-- Logout -->
+            <div class="card" style="text-align: center;">
+                <button class="btn-secondary" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5298/api';
+        let authToken = '';
+        let currentUser = null;
+
+        // Show/Hide sections
+        function showLogin() {
+            document.getElementById('loginSection').classList.remove('hidden');
+            document.getElementById('registerSection').classList.add('hidden');
+        }
+
+        function showRegister() {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('registerSection').classList.remove('hidden');
+        }
+
+        function showTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (tab === 'transfer') {
+                document.getElementById('transferSection').classList.remove('hidden');
+                document.getElementById('historySection').classList.add('hidden');
+            } else {
+                document.getElementById('transferSection').classList.add('hidden');
+                document.getElementById('historySection').classList.remove('hidden');
+                loadTransactions();
+            }
+        }
+
+        // Register
+        async function register() {
+            const phone = document.getElementById('registerPhone').value;
+            const name = document.getElementById('registerName').value;
+            const pin = document.getElementById('registerPin').value;
+            const confirmPin = document.getElementById('registerConfirmPin').value;
+
+            try {
+                const response = await fetch(`${API_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        phoneNumber: phone,
+                        fullName: name,
+                        pin: pin,
+                        confirmPin: confirmPin
+                    })
+                });
+
+                const data = await response.json();
+                showMessage('registerMessage', data.message, data.success);
+
+                if (data.success) {
+                    setTimeout(() => {
+                        document.getElementById('loginPhone').value = phone;
+                        document.getElementById('loginPin').value = pin;
+                        showLogin();
+                    }, 2000);
+                }
+            } catch (error) {
+                showMessage('registerMessage', 'Registration failed: ' + error.message, false);
+            }
+        }
+
+        // Login
+        async function login() {
+            const phone = document.getElementById('loginPhone').value;
+            const pin = document.getElementById('loginPin').value;
+
+            try {
+                const response = await fetch(`${API_URL}/auth/user/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        phoneNumber: phone,
+                        pin: pin
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    authToken = data.token;
+                    currentUser = data.user;
+
+                    document.getElementById('loginSection').classList.add('hidden');
+                    document.getElementById('appSection').classList.remove('hidden');
+
+                    loadUserData();
+                } else {
+                    showMessage('loginMessage', data.message, false);
+                }
+            } catch (error) {
+                showMessage('loginMessage', 'Login failed: ' + error.message, false);
+            }
+        }
+
+        // Load user data
+        async function loadUserData() {
+            document.getElementById('userName').textContent = currentUser.fullName;
+            document.getElementById('userPhone').textContent = currentUser.phoneNumber;
+
+            await loadBalance();
+        }
+
+        // Load balance
+        async function loadBalance() {
+            try {
+                const response = await fetch(`${API_URL}/user/balance`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                const data = await response.json();
+                document.getElementById('balanceAmount').textContent =
+                    data.balance.toFixed(2) + ' AFN';
+            } catch (error) {
+                console.error('Failed to load balance:', error);
+            }
+        }
+
+        // Send money
+        async function sendMoney() {
+            const receiverPhone = document.getElementById('receiverPhone').value;
+            const amount = parseFloat(document.getElementById('transferAmount').value);
+            const pin = document.getElementById('transferPin').value;
+
+            try {
+                const response = await fetch(`${API_URL}/user/transfer`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        receiverPhone: receiverPhone,
+                        amount: amount,
+                        pin: pin
+                    })
+                });
+
+                const data = await response.json();
+                showMessage('transferMessage', data.message, data.success);
+
+                if (data.success) {
+                    document.getElementById('receiverPhone').value = '';
+                    document.getElementById('transferAmount').value = '';
+                    document.getElementById('transferPin').value = '';
+
+                    await loadBalance();
+                }
+            } catch (error) {
+                showMessage('transferMessage', 'Transfer failed: ' + error.message, false);
+            }
+        }
+
+        // Load transactions
+        async function loadTransactions() {
+            try {
+                const response = await fetch(`${API_URL}/user/transactions`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                const transactions = await response.json();
+                const listEl = document.getElementById('transactionsList');
+
+                if (transactions.length === 0) {
+                    listEl.innerHTML = '<div class="loading">No transactions yet</div>';
+                    return;
+                }
+
+                listEl.innerHTML = transactions.map(t => `
+                    <div class="transaction-item">
+                        <div>
+                            <div class="transaction-type">${t.type}</div>
+                            <div class="transaction-date">${new Date(t.createdAt).toLocaleString()}</div>
+                            <div style="font-size: 12px; color: #999;">Ref: ${t.transactionRef}</div>
+                        </div>
+                        <div>
+                            <div class="transaction-amount ${t.isSent ? 'sent' : 'received'}">
+                                ${t.isSent ? '-' : '+'} ${t.amount.toFixed(2)} AFN
+                            </div>
+                            ${t.fee > 0 ? `<div style="font-size: 12px; color: #999;">Fee: ${t.fee.toFixed(2)} AFN</div>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load transactions:', error);
+            }
+        }
+
+        // Logout
+        function logout() {
+            authToken = '';
+            currentUser = null;
+            document.getElementById('appSection').classList.add('hidden');
+            document.getElementById('loginSection').classList.remove('hidden');
+            document.getElementById('loginPhone').value = '';
+            document.getElementById('loginPin').value = '';
+        }
+
+        // Show message
+        function showMessage(elementId, message, isSuccess) {
+            const el = document.getElementById(elementId);
+            el.textContent = message;
+            el.className = 'message ' + (isSuccess ? 'success' : 'error');
+            el.style.display = 'block';
+
+            setTimeout(() => {
+                el.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,713 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Money - Admin Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        h1, h2 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            font-size: 28px;
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+            input:focus {
+                outline: none;
+                border-color: #667eea;
+            }
+
+        button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+            button:hover {
+                transform: translateY(-2px);
+            }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+            .stat-card.green {
+                background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            }
+
+            .stat-card.orange {
+                background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            }
+
+            .stat-card.blue {
+                background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+            .message.success {
+                background: #d4edda;
+                color: #155724;
+            }
+
+            .message.error {
+                background: #f8d7da;
+                color: #721c24;
+            }
+
+        .hidden {
+            display: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+            .badge.success {
+                background: #d4edda;
+                color: #155724;
+            }
+
+            .badge.warning {
+                background: #fff3cd;
+                color: #856404;
+            }
+
+            .badge.info {
+                background: #d1ecf1;
+                color: #0c5460;
+            }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            background: #e0e0e0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+            .tab.active {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+            }
+
+        .admin-header {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-info {
+            color: #333;
+        }
+
+        .admin-role {
+            display: inline-block;
+            padding: 6px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .chart-container {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .chart-bar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 30px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .transaction-type {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #666;
+        }
+
+        .amount-positive {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .amount-negative {
+            color: #dc3545;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎛️ Admin Dashboard</h1>
+
+        <!-- Login Section -->
+        <div id="loginSection" class="card">
+            <h2>Admin Login</h2>
+            <div id="loginMessage" class="message"></div>
+            <div class="input-group">
+                <label>Username</label>
+                <input type="text" id="loginUsername" placeholder="admin" value="admin">
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="loginPassword" placeholder="admin123" value="admin123">
+            </div>
+            <button onclick="login()">Login</button>
+        </div>
+
+        <!-- Main Dashboard -->
+        <div id="dashboardSection" class="hidden">
+            <!-- Admin Header -->
+            <div class="admin-header">
+                <div class="admin-info">
+                    <h2 style="margin: 0; border: none;">
+                        Welcome, <span id="adminName">Admin</span>
+                        <span class="admin-role" id="adminRole">SUPER ADMIN</span>
+                    </h2>
+                </div>
+                <button class="btn-secondary" onclick="logout()">Logout</button>
+            </div>
+
+            <!-- Today's Statistics -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Transactions Today</div>
+                    <div class="stat-value" id="totalTransactions">0</div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-label">Total Volume</div>
+                    <div class="stat-value" id="totalVolume">0 AFN</div>
+                </div>
+                <div class="stat-card orange">
+                    <div class="stat-label">Fees Collected</div>
+                    <div class="stat-value" id="totalFees">0 AFN</div>
+                </div>
+                <div class="stat-card blue">
+                    <div class="stat-label">Profit (Fees - Commissions)</div>
+                    <div class="stat-value" id="profit">0 AFN</div>
+                </div>
+            </div>
+
+            <!-- Transaction Types Chart -->
+            <div class="card">
+                <h2>Transaction Types Today</h2>
+                <div id="transactionTypesChart" class="chart-container">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('transactions')">Recent Transactions</button>
+                <button class="tab" onclick="showTab('users')">Users</button>
+                <button class="tab" onclick="showTab('agents')">Agents</button>
+                <button class="tab" onclick="showTab('report')">Daily Report</button>
+            </div>
+
+            <!-- Transactions Table -->
+            <div id="transactionsSection" class="card">
+                <h2>Recent Transactions</h2>
+                <div style="overflow-x: auto;">
+                    <table id="transactionsTable">
+                        <thead>
+                            <tr>
+                                <th>Reference</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Fee</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionsList">
+                            <tr>
+                                <td colspan="6" class="loading">Loading transactions...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Users Table -->
+            <div id="usersSection" class="card hidden">
+                <h2>All Users</h2>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Phone Number</th>
+                                <th>Full Name</th>
+                                <th>Balance</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersList">
+                            <tr>
+                                <td colspan="5" class="loading">Loading users...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Agents Table -->
+            <div id="agentsSection" class="card hidden">
+                <h2>All Agents</h2>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Agent Code</th>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Float Balance</th>
+                                <th>Commission</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="agentsList">
+                            <tr>
+                                <td colspan="6" class="loading">Loading agents...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Daily Report -->
+            <div id="reportSection" class="card hidden">
+                <h2>7-Day Report</h2>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Transactions</th>
+                                <th>Volume</th>
+                                <th>Fees</th>
+                                <th>Commissions</th>
+                                <th>Profit</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportList">
+                            <tr>
+                                <td colspan="6" class="loading">Loading report...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://localhost:7001/api';
+        let authToken = '';
+        let currentAdmin = null;
+
+        function showTab(tab, evt) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            if (evt && evt.target) {
+                evt.target.classList.add('active');
+            }
+
+            // Hide all sections
+            document.getElementById('transactionsSection').classList.add('hidden');
+            document.getElementById('usersSection').classList.add('hidden');
+            document.getElementById('agentsSection').classList.add('hidden');
+            document.getElementById('reportSection').classList.add('hidden');
+
+            // Show selected section and load data
+            switch(tab) {
+                case 'transactions':
+                    document.getElementById('transactionsSection').classList.remove('hidden');
+                    loadTransactions();
+                    break;
+                case 'users':
+                    document.getElementById('usersSection').classList.remove('hidden');
+                    loadUsers();
+                    break;
+                case 'agents':
+                    document.getElementById('agentsSection').classList.remove('hidden');
+                    loadAgents();
+                    break;
+                case 'report':
+                    document.getElementById('reportSection').classList.remove('hidden');
+                    loadDailyReport();
+                    break;
+            }
+        }
+
+        async function login() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch(`${API_URL}/auth/admin/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    authToken = data.token;
+                    currentAdmin = data.user;
+
+                    document.getElementById('loginSection').classList.add('hidden');
+                    document.getElementById('dashboardSection').classList.remove('hidden');
+
+                    document.getElementById('adminName').textContent = currentAdmin.fullName;
+
+                    loadDashboard();
+                } else {
+                    showMessage('loginMessage', data.message, false);
+                }
+            } catch (error) {
+                showMessage('loginMessage', 'Login failed: ' + error.message, false);
+            }
+        }
+
+        async function loadDashboard() {
+            try {
+                const response = await fetch(`${API_URL}/admin/dashboard`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                const data = await response.json();
+
+                // Update stats
+                document.getElementById('totalTransactions').textContent = data.totalTransactions;
+                document.getElementById('totalVolume').textContent =
+                    data.totalVolume.toFixed(2) + ' AFN';
+                document.getElementById('totalFees').textContent =
+                    data.totalFeesCollected.toFixed(2) + ' AFN';
+                document.getElementById('profit').textContent =
+                    data.profit.toFixed(2) + ' AFN';
+
+                // Update transaction types chart
+                const chartHtml = data.transactionsByType.map(t => {
+                    const percentage = (t.count / data.totalTransactions * 100) || 0;
+                    return `
+                        <div class="chart-bar" style="width: ${percentage}%">
+                            ${t.type}: ${t.count}
+                        </div>
+                    `;
+                }).join('');
+
+                document.getElementById('transactionTypesChart').innerHTML =
+                    chartHtml || '<div class="loading">No transactions yet</div>';
+
+                // Load transactions by default
+                await loadTransactions();
+            } catch (error) {
+                console.error('Failed to load dashboard:', error);
+            }
+        }
+
+        async function loadTransactions() {
+            try {
+                const response = await fetch(`${API_URL}/admin/transactions?pageSize=20`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                const transactions = await response.json();
+                const listEl = document.getElementById('transactionsList');
+
+                if (transactions.length === 0) {
+                    listEl.innerHTML = '<tr><td colspan="6" class="loading">No transactions yet</td></tr>';
+                    return;
+                }
+
+                listEl.innerHTML = transactions.map(t => `
+                    <tr>
+                        <td>
+                            <strong>${t.transactionRef}</strong>
+                        </td>
+                        <td>
+                            <span class="transaction-type">${t.type.replace('_', ' ')}</span>
+                        </td>
+                        <td class="amount-positive">${t.amount.toFixed(2)} AFN</td>
+                        <td>${t.fee.toFixed(2)} AFN</td>
+                        <td>
+                            <span class="badge ${t.status === 'completed' ? 'success' : 'warning'}">
+                                ${t.status}
+                            </span>
+                        </td>
+                        <td>${new Date(t.createdAt).toLocaleString()}</td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load transactions:', error);
+            }
+        }
+
+        async function loadUsers() {
+            try {
+                const response = await fetch(`${API_URL}/admin/users`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                const users = await response.json();
+                const listEl = document.getElementById('usersList');
+
+                if (users.length === 0) {
+                    listEl.innerHTML = '<tr><td colspan="5" class="loading">No users yet</td></tr>';
+                    return;
+                }
+
+                listEl.innerHTML = users.map(u => `
+                    <tr>
+                        <td><strong>${u.phoneNumber}</strong></td>
+                        <td>${u.fullName}</td>
+                        <td class="amount-positive">${u.balance.toFixed(2)} AFN</td>
+                        <td>
+                            <span class="badge ${u.status === 'active' ? 'success' : 'warning'}">
+                                ${u.status}
+                            </span>
+                        </td>
+                        <td>${new Date(u.createdAt).toLocaleDateString()}</td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load users:', error);
+            }
+        }
+
+        async function loadAgents() {
+            try {
+                const response = await fetch(`${API_URL}/admin/agents`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                const agents = await response.json();
+                const listEl = document.getElementById('agentsList');
+
+                if (agents.length === 0) {
+                    listEl.innerHTML = '<tr><td colspan="6" class="loading">No agents yet</td></tr>';
+                    return;
+                }
+
+                listEl.innerHTML = agents.map(a => `
+                    <tr>
+                        <td><strong>${a.agentCode}</strong></td>
+                        <td>${a.fullName}</td>
+                        <td>${a.phoneNumber}</td>
+                        <td class="amount-positive">${a.floatBalance.toFixed(2)} AFN</td>
+                        <td class="amount-positive">${a.commissionBalance.toFixed(2)} AFN</td>
+                        <td>
+                            <span class="badge ${a.status === 'active' ? 'success' : 'warning'}">
+                                ${a.status}
+                            </span>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load agents:', error);
+            }
+        }
+
+        async function loadDailyReport() {
+            try {
+                const response = await fetch(`${API_URL}/admin/daily-report?days=7`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                const report = await response.json();
+                const listEl = document.getElementById('reportList');
+
+                if (report.length === 0) {
+                    listEl.innerHTML = '<tr><td colspan="6" class="loading">No data yet</td></tr>';
+                    return;
+                }
+
+                listEl.innerHTML = report.map(r => `
+                    <tr>
+                        <td><strong>${new Date(r.date).toLocaleDateString()}</strong></td>
+                        <td>${r.transactionCount}</td>
+                        <td class="amount-positive">${r.totalVolume.toFixed(2)} AFN</td>
+                        <td class="amount-positive">${r.totalFees.toFixed(2)} AFN</td>
+                        <td class="amount-negative">${r.totalCommissions.toFixed(2)} AFN</td>
+                        <td class="amount-positive"><strong>${r.profit.toFixed(2)} AFN</strong></td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load report:', error);
+            }
+        }
+
+        function logout() {
+            authToken = '';
+            currentAdmin = null;
+            document.getElementById('dashboardSection').classList.add('hidden');
+            document.getElementById('loginSection').classList.remove('hidden');
+        }
+
+        function showMessage(elementId, message, isSuccess) {
+            const el = document.getElementById(elementId);
+            el.textContent = message;
+            el.className = 'message ' + (isSuccess ? 'success' : 'error');
+            el.style.display = 'block';
+
+            setTimeout(() => {
+                el.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

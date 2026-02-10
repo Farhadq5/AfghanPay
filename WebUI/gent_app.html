@@ -1,0 +1,423 @@
+﻿<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Money - Agent App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        h1, h2 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            font-size: 24px;
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 18px;
+            border-bottom: 2px solid #11998e;
+            padding-bottom: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+            input:focus {
+                outline: none;
+                border-color: #11998e;
+            }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+            button:hover {
+                transform: translateY(-2px);
+            }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #11998e;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+            .message.success {
+                background: #d4edda;
+                color: #155724;
+            }
+
+            .message.error {
+                background: #f8d7da;
+                color: #721c24;
+            }
+
+        .hidden {
+            display: none;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 10px;
+            background: #e0e0e0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+            .tab.active {
+                background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+                color: white;
+            }
+
+        .agent-header {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .agent-code {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .agent-name {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏪 Agent Portal</h1>
+
+        <!-- Login Section -->
+        <div id="loginSection" class="card">
+            <h2>Agent Login</h2>
+            <div id="loginMessage" class="message"></div>
+            <div class="input-group">
+                <label>Phone Number</label>
+                <input type="tel" id="loginPhone" placeholder="+93700333444" value="+93700333444">
+            </div>
+            <div class="input-group">
+                <label>PIN</label>
+                <input type="password" id="loginPin" placeholder="1234" maxlength="4" value="1234">
+            </div>
+            <button onclick="login()">Login</button>
+        </div>
+
+        <!-- Main App Section -->
+        <div id="appSection" class="hidden">
+            <!-- Agent Header -->
+            <div class="agent-header">
+                <div class="agent-code" id="agentCode">AG-KBL-001</div>
+                <div class="agent-name" id="agentName">Loading...</div>
+            </div>
+
+            <!-- Dashboard Stats -->
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-label">Float Balance</div>
+                    <div class="stat-value" id="floatBalance">0 AFN</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Commission</div>
+                    <div class="stat-value" id="commissionBalance">0 AFN</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Today's Earnings</div>
+                    <div class="stat-value" id="todayCommission">0 AFN</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Transactions Today</div>
+                    <div class="stat-value" id="todayTransactions">0</div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('cashin')">Cash In</button>
+                <button class="tab" onclick="showTab('cashout')">Cash Out</button>
+            </div>
+
+            <!-- Cash In Section -->
+            <div id="cashinSection" class="card">
+                <h2>Cash In</h2>
+                <div id="cashinMessage" class="message"></div>
+                <div class="input-group">
+                    <label>Customer Phone Number</label>
+                    <input type="tel" id="cashinPhone" placeholder="+93700111222">
+                </div>
+                <div class="input-group">
+                    <label>Amount (AFN)</label>
+                    <input type="number" id="cashinAmount" placeholder="1000">
+                </div>
+                <button onclick="processCashIn()">Process Cash In</button>
+            </div>
+
+            <!-- Cash Out Section -->
+            <div id="cashoutSection" class="card hidden">
+                <h2>Cash Out</h2>
+                <div id="cashoutMessage" class="message"></div>
+                <div class="input-group">
+                    <label>Customer Phone Number</label>
+                    <input type="tel" id="cashoutPhone" placeholder="+93700111222">
+                </div>
+                <div class="input-group">
+                    <label>Amount (AFN)</label>
+                    <input type="number" id="cashoutAmount" placeholder="1000">
+                </div>
+                <button onclick="processCashOut()">Process Cash Out</button>
+            </div>
+
+            <!-- Logout -->
+            <div class="card" style="text-align: center;">
+                <button class="btn-secondary" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+    <script>
+        const API_URL = 'https://localhost:7001/api';
+        let authToken = '';
+        let currentAgent = null;
+
+        function showTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (tab === 'cashin') {
+                document.getElementById('cashinSection').classList.remove('hidden');
+                document.getElementById('cashoutSection').classList.add('hidden');
+            } else {
+                document.getElementById('cashinSection').classList.add('hidden');
+                document.getElementById('cashoutSection').classList.remove('hidden');
+            }
+        }
+
+        async function login() {
+            const phone = document.getElementById('loginPhone').value;
+            const pin = document.getElementById('loginPin').value;
+
+            try {
+                const response = await fetch(`${API_URL}/auth/user/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phoneNumber: phone, pin: pin })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.user.isAgent) {
+                    authToken = data.token;
+                    currentAgent = data.user;
+
+                    document.getElementById('loginSection').classList.add('hidden');
+                    document.getElementById('appSection').classList.remove('hidden');
+
+                    loadAgentData();
+                } else if (data.success && !data.user.isAgent) {
+                    showMessage('loginMessage', 'This account is not registered as an agent', false);
+                } else {
+                    showMessage('loginMessage', data.message, false);
+                }
+            } catch (error) {
+                showMessage('loginMessage', 'Login failed: ' + error.message, false);
+            }
+        }
+
+        async function loadAgentData() {
+            document.getElementById('agentCode').textContent = currentAgent.agentCode;
+            document.getElementById('agentName').textContent = currentAgent.fullName;
+
+            await loadDashboard();
+        }
+
+        async function loadDashboard() {
+            try {
+                const response = await fetch(`${API_URL}/agent/dashboard`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                const data = await response.json();
+
+                document.getElementById('floatBalance').textContent =
+                    data.floatBalance.toFixed(2) + ' AFN';
+                document.getElementById('commissionBalance').textContent =
+                    data.commissionBalance.toFixed(2) + ' AFN';
+                document.getElementById('todayCommission').textContent =
+                    data.todayCommission.toFixed(2) + ' AFN';
+                document.getElementById('todayTransactions').textContent =
+                    data.todayTransactions;
+            } catch (error) {
+                console.error('Failed to load dashboard:', error);
+            }
+        }
+
+        async function processCashIn() {
+            const customerPhone = document.getElementById('cashinPhone').value;
+            const amount = parseFloat(document.getElementById('cashinAmount').value);
+
+            try {
+                const response = await fetch(`${API_URL}/agent/cash-in`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        customerPhone: customerPhone,
+                        amount: amount
+                    })
+                });
+
+                const data = await response.json();
+                showMessage('cashinMessage', data.message +
+                    (data.commission ? ` | Commission: ${data.commission.toFixed(2)} AFN` : ''),
+                    data.success);
+
+                if (data.success) {
+                    document.getElementById('cashinPhone').value = '';
+                    document.getElementById('cashinAmount').value = '';
+                    await loadDashboard();
+                }
+            } catch (error) {
+                showMessage('cashinMessage', 'Cash-in failed: ' + error.message, false);
+            }
+        }
+
+        async function processCashOut() {
+            const customerPhone = document.getElementById('cashoutPhone').value;
+            const amount = parseFloat(document.getElementById('cashoutAmount').value);
+
+            try {
+                const response = await fetch
+                    const data = await response.json();
+                showMessage('cashoutMessage', data.message +
+                    (data.commission ? ` | Commission: ${data.commission.toFixed(2)} AFN` : ''),
+                    data.success);
+
+                if (data.success) {
+                    document.getElementById('cashoutPhone').value = '';
+                    document.getElementById('cashoutAmount').value = '';
+                    await loadDashboard();
+                }
+            } catch (error) {
+                showMessage('cashoutMessage', 'Cash-out failed: ' + error.message, false);
+            }
+        }
+
+        function logout() {
+            authToken = '';
+            currentAgent = null;
+            document.getElementById('appSection').classList.add('hidden');
+            document.getElementById('loginSection').classList.remove('hidden');
+        }
+
+        function showMessage(elementId, message, isSuccess) {
+            const el = document.getElementById(elementId);
+            el.textContent = message;
+            el.className = 'message ' + (isSuccess ? 'success' : 'error');
+            el.style.display = 'block';
+
+            setTimeout(() => {
+                el.style.display = 'none';
+            }, 5000);
+        }
+    </script>
