@@ -3,6 +3,8 @@ using AfghanPay.API.DTOs;
 using AfghanPay.API.Hubs;
 using AfghanPay.API.Models;
 using AfghanPay.API.Services.Interfaces;
+using AfghanPay.Models;
+using AfghanPay.Services.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -14,12 +16,18 @@ namespace AfghanPay.API.Services
         private readonly AppDbContext _context;
         private readonly IHubContext<CashoutHub> _hubContext;
         private readonly IHubContext<NotificationHub> _notificationHub;
+        private readonly IAdminEventsBrodcaster _adminEventsBrodcaster;
+        private readonly ILogger<CashOutService> _logger;
         public CashOutService(AppDbContext dbContext, IHubContext<CashoutHub> hubContext,
-            IHubContext<NotificationHub> notocation)
+            IHubContext<NotificationHub> notocation,
+            IAdminEventsBrodcaster adminEventsBrodcaster,
+            ILogger<CashOutService> logger)
         {
             _context = dbContext;
             _hubContext = hubContext;
             _notificationHub = notocation;
+            _adminEventsBrodcaster = adminEventsBrodcaster;
+            _logger = logger;
         }
        
         async Task<CashOutTransactionResponse> ICashOutService.CreateCashOutRequestAsync(Guid userId, CreateCashOutDto cashoutrequest)
@@ -30,6 +38,15 @@ namespace AfghanPay.API.Services
                 var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
                 if (user == null)
                 {
+                    await TryLogAdminEventAsync(new AdminEvents
+                    {
+                        Type = "cashout_request",
+                        Staus = "failed",
+                        Reason = "User not found",
+                        AgentCode = cashoutrequest.AgentCode,
+                        Amount = cashoutrequest.Amount
+                    });
+
                     return new CashOutTransactionResponse
                     {
                         success = false,
@@ -38,6 +55,16 @@ namespace AfghanPay.API.Services
                 }
                 if (user.PinHash != cashoutrequest.pin)
                 {
+                    await TryLogAdminEventAsync(new AdminEvents
+                    {
+                        Type = "cashout_request",
+                        Staus = "failed",
+                        Reason = "Invalid PIN",
+                        SenderPhone = user.PhoneNumber,
+                        AgentCode = cashoutrequest.AgentCode,
+                        Amount = cashoutrequest.Amount
+                    });
+
                     return new CashOutTransactionResponse
                     {
                         success = false,
@@ -54,6 +81,16 @@ namespace AfghanPay.API.Services
 
                 if (agent == null)
                 {
+                    await TryLogAdminEventAsync(new AdminEvents
+                    {
+                        Type = "cashout_request",
+                        Staus = "failed",
+                        Reason = "Invalid agent code",
+                        SenderPhone = user.PhoneNumber,
+                        AgentCode = cashoutrequest.AgentCode,
+                        Amount = cashoutrequest.Amount
+                    });
+
                     return new CashOutTransactionResponse
                     {
                         success = false,
@@ -69,6 +106,17 @@ namespace AfghanPay.API.Services
                 //check balance
                 if (user.Balance <totalDeduction)
                 {
+                    await TryLogAdminEventAsync(new AdminEvents
+                    {
+                        Type = "cashout_request",
+                        Staus = "failed",
+                        Reason = "Insufficient balance",
+                        SenderPhone = user.PhoneNumber,
+                        AgentCode = agent.AgentCode,
+                        Amount = cashoutrequest.Amount,
+                        Fee = fee
+                    });
+
                     return new CashOutTransactionResponse
                     {
                         success = false,
@@ -108,6 +156,19 @@ namespace AfghanPay.API.Services
                 await _hubContext.Clients.Group(agent.AgentCode.Trim().ToUpper())
                     .SendAsync("newCashoutRequest", dto);
 
+                await TryLogAdminEventAsync(new AdminEvents
+                {
+                    Type = "cashout_request",
+                    Staus = "pending",
+                    ActoreAgentId = agent.Id,
+                    CashoutRequestId = cashout.Id,
+                    Amount = cashout.Amount,
+                    Fee = cashout.fee,
+                    TxRef = cashout.TransactionRef,
+                    SenderPhone = user.PhoneNumber,
+                    AgentCode = agent.AgentCode
+                });
+
                 return new CashOutTransactionResponse
                 {
                     success = true,
@@ -121,8 +182,21 @@ namespace AfghanPay.API.Services
 
             catch (Exception e)
             {
+                await TryLogAdminEventAsync(new AdminEvents
+                {
+                    Type = "cashout_request",
+                    Staus = "failed",
+                    Reason = e.Message,
+                    ActoreAgentId = null,
+                    Amount = cashoutrequest.Amount,
+                    AgentCode = cashoutrequest.AgentCode
+                });
 
-                throw;
+                return new CashOutTransactionResponse
+                {
+                    success = false,
+                    message = "An error occurred while creating the cash-out request"
+                };
             }
 
            
@@ -142,6 +216,15 @@ namespace AfghanPay.API.Services
 
                 if (cashout == null)
                 {
+                    await TryLogAdminEventAsync(new AdminEvents
+                    {
+                        Type = "cashout_response",
+                        Staus = "failed",
+                        Reason = "Cash-out request not found",
+                        ActoreAgentId = agentId,
+                        CashoutRequestId = responseCashout.RequestId
+                    });
+
                     return new CashOutTransactionResponse
                     {
                         success = false,
@@ -151,6 +234,18 @@ namespace AfghanPay.API.Services
 
                 if (cashout.Status != CashoutStatus.Pending)
                 {
+                    await TryLogAdminEventAsync(new AdminEvents
+                    {
+                        Type = "cashout_response",
+                        Staus = "failed",
+                        Reason = "Cash-out request already responded to",
+                        ActoreAgentId = agentId,
+                        CashoutRequestId = cashout.Id,
+                        TxRef = cashout.TransactionRef,
+                        SenderPhone = cashout.User?.PhoneNumber,
+                        AgentCode = cashout.AgentCode
+                    });
+
                     return new CashOutTransactionResponse
                     {
                         success = false,
@@ -165,6 +260,19 @@ namespace AfghanPay.API.Services
                     // accept request agent gives cash to user
                     cashout.Status = CashoutStatus.Approved;
                     await _context.SaveChangesAsync();
+
+                    await TryLogAdminEventAsync(new AdminEvents
+                    {
+                        Type = "cashout_response",
+                        Staus = "approved",
+                        ActoreAgentId = agentId,
+                        CashoutRequestId = cashout.Id,
+                        TxRef = cashout.TransactionRef,
+                        Amount = cashout.Amount,
+                        Fee = cashout.fee,
+                        SenderPhone = cashout.User?.PhoneNumber,
+                        AgentCode = cashout.AgentCode
+                    });
 
                     return new CashOutTransactionResponse
                     {
@@ -185,6 +293,20 @@ namespace AfghanPay.API.Services
 
                     await _context.SaveChangesAsync();
 
+                    await TryLogAdminEventAsync(new AdminEvents
+                    {
+                        Type = "cashout_response",
+                        Staus = "rejected",
+                        ActoreAgentId = agentId,
+                        CashoutRequestId = cashout.Id,
+                        TxRef = cashout.TransactionRef,
+                        Amount = cashout.Amount,
+                        Fee = cashout.fee,
+                        SenderPhone = cashout.User?.PhoneNumber,
+                        AgentCode = cashout.AgentCode,
+                        Reason = responseCashout.RejectionMessage
+                    });
+
                     return new CashOutTransactionResponse
                     {
                         success = true,
@@ -196,6 +318,14 @@ namespace AfghanPay.API.Services
             }
             catch (Exception e)
             {
+                await TryLogAdminEventAsync(new AdminEvents
+                {
+                    Type = "cashout_response",
+                    Staus = "failed",
+                    Reason = e.Message,
+                    ActoreAgentId = agentId,
+                    CashoutRequestId = responseCashout.RequestId
+                });
 
                 return new CashOutTransactionResponse
                 {
@@ -218,6 +348,15 @@ namespace AfghanPay.API.Services
 
                 if (cashout == null)
                 {
+                    await TryLogAdminEventAsync(new AdminEvents
+                    {
+                        Type = "cashout_complete",
+                        Staus = "failed",
+                        Reason = "Cash-out request not found",
+                        ActoreAgentId = agentId,
+                        CashoutRequestId = cashoutRequestId
+                    });
+
                     return new CashOutTransactionResponse
                     {
                         success = false,
@@ -227,6 +366,19 @@ namespace AfghanPay.API.Services
 
                 if (cashout.Status != CashoutStatus.Approved)
                 {
+                    await TryLogAdminEventAsync(new AdminEvents
+                    {
+                        Type = "cashout_complete",
+                        Staus = "failed",
+                        Reason = "Cash-out request is not approved yet",
+                        ActoreAgentId = agentId,
+                        CashoutRequestId = cashout.Id,
+                        TxRef = cashout.TransactionRef,
+                        Amount = cashout.Amount,
+                        Fee = cashout.fee,
+                        AgentCode = cashout.AgentCode
+                    });
+
                     return new CashOutTransactionResponse
                     {
                         success = false,
@@ -238,6 +390,16 @@ namespace AfghanPay.API.Services
 
                 if (agent == null)
                     {
+                    await TryLogAdminEventAsync(new AdminEvents
+                    {
+                        Type = "cashout_complete",
+                        Staus = "failed",
+                        Reason = "Agent not found",
+                        ActoreAgentId = agentId,
+                        CashoutRequestId = cashout.Id,
+                        TxRef = cashout.TransactionRef
+                    });
+
                     return new CashOutTransactionResponse
                     {
                         success = false,
@@ -247,6 +409,19 @@ namespace AfghanPay.API.Services
 
                 if (agent.FloatBalance < cashout.Amount)
                 {
+                    await TryLogAdminEventAsync(new AdminEvents
+                    {
+                        Type = "cashout_complete",
+                        Staus = "failed",
+                        Reason = "Agent has insufficient float balance to complete cash-out",
+                        ActoreAgentId = agentId,
+                        CashoutRequestId = cashout.Id,
+                        TxRef = cashout.TransactionRef,
+                        Amount = cashout.Amount,
+                        Fee = cashout.fee,
+                        AgentCode = agent.AgentCode
+                    });
+
                     return new CashOutTransactionResponse
                     {
                         success = false,
@@ -298,6 +473,21 @@ namespace AfghanPay.API.Services
                        compleatedAt = DateTime.UtcNow
                     });
 
+                await TryLogAdminEventAsync(new AdminEvents
+                {
+                    Type = "cashout_complete",
+                    Staus = "completed",
+                    ActoreAgentId = agentId,
+                    CashoutRequestId = cashout.Id,
+                    TransactionId = transaction.Id,
+                    Amount = cashout.Amount,
+                    Fee = cashout.fee,
+                    Commission = agentCommission,
+                    TxRef = cashout.TransactionRef,
+                    SenderPhone = cashout.User?.PhoneNumber,
+                    AgentCode = agent.AgentCode
+                });
+
                 return new CashOutTransactionResponse 
                 { 
                     success = true, 
@@ -309,6 +499,15 @@ namespace AfghanPay.API.Services
             }
             catch (Exception e)
             {
+                await tx.RollbackAsync();
+                await TryLogAdminEventAsync(new AdminEvents
+                {
+                    Type = "cashout_complete",
+                    Staus = "failed",
+                    Reason = e.Message,
+                    ActoreAgentId = agentId,
+                    CashoutRequestId = cashoutRequestId
+                });
 
                 return new CashOutTransactionResponse
                     {
@@ -420,6 +619,18 @@ namespace AfghanPay.API.Services
             var date = DateTime.UtcNow.ToString("yyyymmdd");
             var random = Guid.NewGuid().ToString().Substring(0, 6).ToUpper();
             return $"TXN{date}{random}";
+        }
+
+        private async Task TryLogAdminEventAsync(AdminEvents adminEvent)
+        {
+            try
+            {
+                await _adminEventsBrodcaster.SaveAndBrodcastAsync(adminEvent);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to log/broadcast admin event. Type: {EventType}", adminEvent.Type);
+            }
         }
 
     }

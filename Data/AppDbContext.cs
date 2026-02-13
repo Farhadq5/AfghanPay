@@ -1,4 +1,5 @@
 ﻿using AfghanPay.API.Models;
+using AfghanPay.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace AfghanPay.API.Data
@@ -16,6 +17,7 @@ namespace AfghanPay.API.Data
         public DbSet<Commission> Commissions { get; set; }
         public DbSet<AdminUser> AdminUsers { get; set; }
         public DbSet<CashoutRequest> cashoutrequest { get; set; }
+        public DbSet<AdminEvents> AdminEvents { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

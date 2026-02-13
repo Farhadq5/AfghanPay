@@ -1,5 +1,6 @@
 ﻿using AfghanPay.API.DTOs;
 using AfghanPay.API.Models;
+using AfghanPay.Models;
 
 namespace AfghanPay.API.Services.Interfaces
 {
@@ -10,5 +11,6 @@ namespace AfghanPay.API.Services.Interfaces
         Task<List<DailyReportDto>> GetDailyReportAsync(int days = 7);
         Task<List<User>> GetAllUsersAsync();
         Task<List<AgentListDto>> GetAllAgentsAsync();
+        Task<List<AdminEvents>> GetAdminEventsAsync(int page = 1, int pageSize = 100);
     }
 }

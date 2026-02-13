@@ -1,6 +1,7 @@
 ﻿using AfghanPay.API.DTOs;
 using AfghanPay.API.Models;
 using AfghanPay.API.Services.Interfaces;
+using AfghanPay.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -151,6 +152,30 @@ namespace AfghanPay.API.Controllers
             {
                 _logger.LogError(ex, "Error getting agents");
                 return StatusCode(500, new { message = "Error retrieving agents" });
+            }
+        }
+
+        /// <summary>
+        /// Get admin activity events (paginated)
+        /// </summary>
+        /// <param name="page">Page number</param>
+        /// <param name="pageSize">Items per page</param>
+        /// <returns>List of admin events</returns>
+        [HttpGet("events")]
+        [ProducesResponseType(typeof(List<AdminEvents>), 200)]
+        public async Task<IActionResult> GetAdminEvents(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 100)
+        {
+            try
+            {
+                var events = await _adminService.GetAdminEventsAsync(page, pageSize);
+                return Ok(events);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting admin events");
+                return StatusCode(500, new { message = "Error retrieving admin events" });
             }
         }
     }

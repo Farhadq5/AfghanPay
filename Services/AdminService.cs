@@ -2,6 +2,7 @@
 using AfghanPay.API.DTOs;
 using AfghanPay.API.Models;
 using AfghanPay.API.Services.Interfaces;
+using AfghanPay.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace AfghanPay.API.Services
@@ -124,6 +125,15 @@ namespace AfghanPay.API.Services
                 Status = a.Status,
                 CreatedAt = a.CreatedAt
             }).ToList();
+        }
+
+        public async Task<List<AdminEvents>> GetAdminEventsAsync(int page = 1, int pageSize = 100)
+        {
+            return await _dbcontext.AdminEvents
+                .OrderByDescending(e => e.OccurredAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
         }
     }
 }

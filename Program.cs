@@ -10,6 +10,9 @@ using Microsoft.OpenApi.Models;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.HttpOverrides;
+using AfghanPay.Hubs;
+using AfghanPay.Services.Interfaces;
+using AfghanPay.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -156,6 +159,7 @@ builder.Services.AddScoped<IAgentService, AgentService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<ICashOutService, CashOutService>();
 builder.Services.AddSingleton<IUserIdProvider, SubUserIdProvider>();
+builder.Services.AddScoped<IAdminEventsBrodcaster, AdminEventsBrodcaster>();
 
 // cors configuration (allow front end apps to access api)
 
@@ -175,11 +179,11 @@ builder.Services.AddCors(options =>
         }
         else
         {
-                policy.WithOrigins("https://localhost:7177")
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-                .AllowCredentials();
-            
+            policy.WithOrigins("https://localhost:7177")
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
+
         }
 
     });
@@ -270,7 +274,7 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseExceptionHandler("/Error"); //production error handling
-    app.UseHsts(); 
+    app.UseHsts();
 }
 
 app.UseHttpsRedirection();
@@ -286,6 +290,7 @@ app.UseAuthorization(); // checl user permissions/roles
 
 app.MapHub<CashoutHub>("/cashoutHub");
 app.MapHub<NotificationHub>("/notifyHub");
+app.MapHub<AdminHub>("/adminHub");
 
 app.MapControllers();
 
